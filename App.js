@@ -1,59 +1,45 @@
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import {
-  Button,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Button, FlatList, StyleSheet, View } from "react-native";
+import NoteInput from "./components/NoteInput";
+import NoteItem from "./components/NoteItem";
 
 export default function App() {
   const [notes, setNotes] = useState([]);
-  const [title, setTitle] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
-  function inputHandler(event) {
-    setTitle(event.target.value);
-  }
-
-  function submitHandler() {
+  function addNoteHandler(enteredNote) {
     setNotes([
       ...notes,
-      { note: title, id: Math.random().toString(16).slice(2) },
+      { note: enteredNote, id: Math.random().toString(16).slice(2) },
     ]);
-    // setTitle("");
+    setShowModal(false);
   }
 
   function removeHandler(id) {
     const notesFilter = notes.filter((note) => note.id !== id);
-    console.log("notesFilter");
+    setNotes(notesFilter);
+  }
+
+  function modalHandler() {
+    setShowModal(!showModal);
   }
 
   console.log(notes);
 
   return (
     <View style={styles.container}>
-      <TextInput
-        placeholder="Take your note here..."
-        style={styles.inputNote}
-        onChange={inputHandler}
-        value={title}
-      />
-      <Button title="Add Note" color="orange" onPress={submitHandler} />
+      <Button title="+ add note" color="blue" onPress={modalHandler} />
+      <NoteInput onAddNote={addNoteHandler} visible={showModal} />
       <View style={styles.listNotes}>
-        <ScrollView>
-          {notes?.map((note) => (
-            <View
-              key={Math.random().toString(16).slice(2)}
-              style={styles.eachNote}
-            >
-              <Text style={styles.textNote} onPress={removeHandler(note.id)}>
-                {note.note}
-              </Text>
-            </View>
-          ))}
-        </ScrollView>
+        <FlatList
+          data={notes}
+          keyExtractor={(item) => item.id}
+          renderItem={(itemData) => (
+            <NoteItem itemData={itemData} removeItem={removeHandler} />
+          )}
+          alwaysBounceVertical={false}
+        />
       </View>
     </View>
   );
@@ -65,21 +51,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: "1rem",
   },
-  inputNote: {
-    padding: "8px",
-    backgroundColor: "#cfcfcf",
-    marginBottom: "1rem",
-  },
   listNotes: {
     marginVertical: "1rem",
-  },
-  eachNote: {
-    backgroundColor: "blue",
-    borderRadius: "8px",
-    padding: "1rem",
-    marginVertical: ".5rem",
-  },
-  textNote: {
-    color: "#fff",
   },
 });
